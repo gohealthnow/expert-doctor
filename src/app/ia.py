@@ -2,7 +2,7 @@
 
 import torch
 
-def processa_texto(texto):
+def process_text(texto):
     # Lógica da IA para processar o texto
     # Carregar modelo treinado se necessário
     # modelo = torch.load('models/modelo_ia.pth')
