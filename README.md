@@ -8,9 +8,16 @@ This repository is part of the Go Health project, which aims to leverage artific
 
 ## Features
 
-- **AI-Powered Diagnostics**: Uses advanced machine learning algorithms to analyze patient data.
+- **AI-Powered Diagnostics**: Uses advanced machine learning algorithms to analyze pataient data.
 - **User-Friendly Interface**: Easy-to-use interface for both patients and healthcare providers.
 - **Scalable Architecture**: Designed to handle large volumes of data efficiently.
+
+## AI Process
+The artificial intelligence API in Go Health performs diagnostics in three steps:
+
+- **User Input**: The user submits a textual description of their symptoms or pains. The API is designed to handle cases where the patient may not clearly know what they are experiencing.
+- **Checklist Generation**: Based on the provided symptoms, the API generates a checklist of options that may resemble possible medical conditions related to the reported symptoms.
+- **Disease Classification**: The data from the checklist is analyzed to classify and identify a potential disease. The system uses machine learning models to provide a suggested diagnosis.
 
 ## Installation
 
