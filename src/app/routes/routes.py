@@ -9,6 +9,8 @@ bp = Blueprint('main', __name__)
 def get_checklist():
     data = request.get_json()
     raw_text = data.get('text')
+    if not raw_text:
+        return jsonify({'error': 'Text is required'}), 400
     checklist = process_text(raw_text)
     return jsonify({'checklist': checklist})
 
