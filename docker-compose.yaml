@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  fastapi:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - vllm
+    env_file:
+      - .env
+
+  vllm:
+    image: vllm/vllm-openai:latest
+    runtime: nvidia
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    ports:
+      - "5000:5000"
+    command: ["serve", "dmis-lab/meerkat-7b-v1.0"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
