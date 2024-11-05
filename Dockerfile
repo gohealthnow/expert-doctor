@@ -15,4 +15,7 @@ COPY . .
 
 # Defina o comando padrão para rodar a aplicação
 # Substitua 'app.py' pelo nome do seu arquivo principal
-CMD ["python", "app.py"]
+
+RUN pip install fastapi[standard]
+
+CMD ["fastapi","dev","app.py"]
