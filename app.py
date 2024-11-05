@@ -1,14 +1,21 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import torch
 
 app = FastAPI()
 
 # Carrega o BioBERT para análise de sintomas
-model_name = "dmis-lab/biobert-base-cased-v1.1"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# Load the model
+classifier = pipeline("text-classification", model="Zabihin/Symptom_to_Diagnosis", tokenizer="Zabihin/Symptom_to_Diagnosis")
+
+# Get the predicted label
+result = classifier(request.text)
+
+# Print the predicted label
+predicted_label = result[0]['label']
+print("Predicted Label:", predicted_label)
 
 class TextRequest(BaseModel):
     text: str
