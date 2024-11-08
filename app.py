@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 
 # Modelo e configurações
-MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
+MODEL_NAME = "meta-llama/Llama-3.1-70B-Instruct"
 
 # Classe para requisição
 class TextRequest(BaseModel):
@@ -14,7 +14,7 @@ app = FastAPI()
 
 # Carregar modelo e tokenizer
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, from_tf=True)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
 classifier = pipeline("text-classification", model=MODEL_NAME)
 
 # ! Esta função recebe um prompt do usuário e a IA retorna um checklist de sintomas. O usuário deve marcar os sintomas que está sentindo, conforme o texto que ele escreveu e que gerou o checklist.
