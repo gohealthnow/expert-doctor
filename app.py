@@ -1,9 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
-
-# Modelo e configurações
-MODEL_NAME = "meta-llama/Llama-3.1-70B-Instruct"
+from transformers import pipeline
 
 # Classe para requisição
 class TextRequest(BaseModel):
@@ -12,10 +9,7 @@ class TextRequest(BaseModel):
 # Inicializar FastAPI
 app = FastAPI()
 
-# Carregar modelo e tokenizer
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
-classifier = pipeline("text-classification", model=MODEL_NAME)
+pipe = pipeline("text-generation", model="meta-llama/Llama-3.2-1B-Instruct")
 
 # ! Esta função recebe um prompt do usuário e a IA retorna um checklist de sintomas. O usuário deve marcar os sintomas que está sentindo, conforme o texto que ele escreveu e que gerou o checklist.
 @app.post("/symptoms")
@@ -24,20 +18,29 @@ async def predict_symptoms(request: TextRequest):
         raise HTTPException(status_code=400, detail="Você não enviou a requisição com texto solicitado")
 
     try:
-        result = classifier(request.text)
+        messages = [
+            {"role": "system", "content": "Você é uma IA especializada em identificar sintomas a partir de descrições textuais fornecidas pelos usuários. Sua tarefa é gerar um checklist de sintomas baseado no texto fornecido, para que o usuário possa marcar os sintomas que está sentindo. A resposta deve ser um JSON válido contendo uma lista de sintomas."},
+            {"role": "user", "content": request.text},
+            {"role": "system", "content": "Por favor, forneça a resposta no formato JSON, com a chave 'sintomas' contendo uma lista de sintomas identificados."}
+        ]
+
+        result = pipe(messages)
         
-        if result is None:
-            raise HTTPException(status_code=500, detail="Nenhum resultado obtido do classificador")
+        if not result or not isinstance(result, list) or not isinstance(result[0], dict):    
+            raise HTTPException(status_code=500, detail="Erro ao processar a análise de sintomas")
         
-        symptoms = []
-        for res in result:
-            if isinstance(res, dict) and 'label' in res:
-                symptoms.append(res['label'])
+        symptoms = [
+            msg['content'] for msg in result 
+            if isinstance(msg, dict) and 'content' in msg
+        ]
         
         if not symptoms:
-            raise HTTPException(status_code=500, detail="Não foi possível extrair sintomas dos resultados")
-        
-        return symptoms
+            raise HTTPException(
+                status_code=500, 
+                detail="Não foi possível extrair sintomas dos resultados"
+            )
+            
+        return {"sintomas": symptoms}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao processar: {str(e)}")
@@ -51,7 +54,7 @@ def predict_diagnosis(request: TextRequest):
 
     try:
         # Realizar classificação com pipeline
-        result = classifier(request.text)
+        result = pipe(request.text)
         
         if not result or not isinstance(result, list) or not isinstance(result[0], dict):
             raise HTTPException(status_code=500, detail="Erro ao processar a análise de sintomas")
