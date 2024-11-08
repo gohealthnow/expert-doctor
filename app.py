@@ -1,10 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
-import numpy as np
 
 # Modelo e configurações
-MODEL_NAME = "meta-llama/Llama-3.1-70B-Instruct"
+MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
 
 # Classe para requisição
 class TextRequest(BaseModel):
