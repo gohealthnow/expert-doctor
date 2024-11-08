@@ -1,3 +1,5 @@
-fastapi
+fastapi[standard]
 pydantic
 transformers
+tensorflow
+torch
