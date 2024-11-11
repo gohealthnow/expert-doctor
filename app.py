@@ -9,6 +9,7 @@ class TextRequest(BaseModel):
 # Inicializar FastAPI
 app = FastAPI()
 
+# Inicializar o pipeline de geração de texto
 pipe = pipeline("text-generation", model="meta-llama/Llama-3.2-1B-Instruct")
 
 # ! Esta função recebe um prompt do usuário e a IA retorna um checklist de sintomas. O usuário deve marcar os sintomas que está sentindo, conforme o texto que ele escreveu e que gerou o checklist.
@@ -25,25 +26,30 @@ async def predict_symptoms(request: TextRequest):
             {"role": "system", "content": "Por favor, forneça a resposta no formato JSON, com a chave 'sintomas' contendo uma lista de sintomas identificados."}
         ]
 
-        outputs = pipe(messages,max_new_tokens=256,)
-        
-        if not outputs or not isinstance(outputs, list) or not isinstance(outputs[0], dict):
+        # Concatenar todas as mensagens
+        text = " ".join([msg["content"] for msg in messages])
+
+        # Gerar texto usando o pipeline
+        response = pipe(text, max_new_tokens=256, pad_token_id=pipe.tokenizer.eos_token_id if pipe.tokenizer else 50256)
+
+        if not response or not isinstance(response, list) or not isinstance(response[0], dict):
             raise HTTPException(status_code=500, detail="Erro ao processar a análise de sintomas")
-        
+
         # Preparar resposta
         symptoms = [
-            res['content'] for res in outputs 
-            if isinstance(res, dict) and 'content' in res
+            res['generated_text'] for res in response 
+            if isinstance(res, dict) and 'generated_text' in res
         ]
-        
+
         # Validar se obtivemos resultados
         if not symptoms:
             raise HTTPException(
                 status_code=500, 
                 detail="Não foi possível extrair sintomas dos resultados"
             )
-            
+
         return {"sintomas": symptoms}
+    
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao processar: {str(e)}")
