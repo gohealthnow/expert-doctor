@@ -26,11 +26,8 @@ async def predict_symptoms(request: TextRequest):
             {"role": "system", "content": "Por favor, forneça a resposta no formato JSON, com a chave 'sintomas' contendo uma lista de sintomas identificados."}
         ]
 
-        # Concatenar todas as mensagens
-        text = " ".join([msg["content"] for msg in messages])
-
         # Gerar texto usando o pipeline
-        response = pipe(text, max_new_tokens=256, pad_token_id=pipe.tokenizer.eos_token_id if pipe.tokenizer else 50256)
+        response = pipe(messages, max_new_tokens=256, pad_token_id=pipe.tokenizer.eos_token_id if pipe.tokenizer else 50256)
 
         if not response or not isinstance(response, list) or not isinstance(response[0], dict):
             raise HTTPException(status_code=500, detail="Erro ao processar a análise de sintomas")
