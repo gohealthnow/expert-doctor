@@ -19,21 +19,24 @@ async def predict_symptoms(request: TextRequest):
 
     try:
         messages = [
+            
             {"role": "system", "content": "Você é uma IA especializada em identificar sintomas a partir de descrições textuais fornecidas pelos usuários. Sua tarefa é gerar um checklist de sintomas baseado no texto fornecido, para que o usuário possa marcar os sintomas que está sentindo. A resposta deve ser um JSON válido contendo uma lista de sintomas."},
             {"role": "user", "content": request.text},
             {"role": "system", "content": "Por favor, forneça a resposta no formato JSON, com a chave 'sintomas' contendo uma lista de sintomas identificados."}
         ]
 
-        result = pipe(messages)
+        outputs = pipe(messages,max_new_tokens=256,)
         
-        if not result or not isinstance(result, list) or not isinstance(result[0], dict):    
+        if not outputs or not isinstance(outputs, list) or not isinstance(outputs[0], dict):
             raise HTTPException(status_code=500, detail="Erro ao processar a análise de sintomas")
         
+        # Preparar resposta
         symptoms = [
-            msg['content'] for msg in result 
-            if isinstance(msg, dict) and 'content' in msg
+            res['content'] for res in outputs 
+            if isinstance(res, dict) and 'content' in res
         ]
         
+        # Validar se obtivemos resultados
         if not symptoms:
             raise HTTPException(
                 status_code=500, 
@@ -41,7 +44,7 @@ async def predict_symptoms(request: TextRequest):
             )
             
         return {"sintomas": symptoms}
-
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao processar: {str(e)}")
 
