@@ -36,7 +36,7 @@ async def predict_symptoms(request: TextRequest):
                 "sem blocos de código e sem formatações adicionais. Use o formato: {\"sintomas\": [\"Sintoma 1\", \"Sintoma 2\", ...]}. "
                 "Garanta que a resposta siga o regex: '^\\{\"sintomas\":\\s*\\[.*\\]\\}$'."
             )},
-            {"role": "user", "content": json.dumps(request.text)},
+            {"role": "user", "content": request.text},
             {"role": "system", "content": (
                 "Por favor, responda somente com o JSON em uma única linha, sem \n, \", ou blocos de código (```)."
             )}
