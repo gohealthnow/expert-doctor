@@ -21,6 +21,9 @@ pipe = pipeline("text-generation", model="meta-llama/Llama-3.2-1B-Instruct")
 # Expressão regular para validar JSON com sintomas
 json_regex = re.compile(r'^\{.*"sintomas":\s*\[.*\]\}$')
 
+# Expressão regular para validar JSON com diagnóstico
+json_regex_diagnotis = re.compile(r'^\{.*"title":\s*".*",\s*"description":\s*".*",\s*"score":\s*".*"\}$')
+
 # ! Esta função recebe um prompt do usuário e a IA retorna um checklist de sintomas. O usuário deve marcar os sintomas que está sentindo, conforme o texto que ele escreveu e que gerou o checklist.
 @app.post("/symptoms")
 async def predict_symptoms(request: TextRequest):
@@ -43,7 +46,7 @@ async def predict_symptoms(request: TextRequest):
         ]
 
         # Gerar texto usando o pipeline
-        response = pipe(messages, max_new_tokens=256, pad_token_id=pipe.tokenizer.eos_token_id if pipe.tokenizer else 50256)
+        response = pipe(messages, max_new_tokens=500, pad_token_id=pipe.tokenizer.eos_token_id if pipe.tokenizer else 50256)
 
         # Obter o texto gerado pelo 'assistant'
         generated_text = response[0]['generated_text'][3]['content']
@@ -70,6 +73,7 @@ async def predict_symptoms(request: TextRequest):
 # ! Esta função irá enviar o checklist de sintomas marcados pelo usuário e a IA irá retornar um texto e uma descrição do que ele tem!
 @app.post("/diagnosis")
 def predict_diagnosis(request: SymptomsResponse):
+    
     if not request.sintomas and not isinstance(request.sintomas, list):
         raise HTTPException(status_code=400, detail="Você não enviou a requisição com texto solicitado")
     
@@ -88,27 +92,25 @@ def predict_diagnosis(request: SymptomsResponse):
         ]
 
         # Gerar texto usando o pipeline
-        response = pipe(messages, max_new_tokens=256, pad_token_id=pipe.tokenizer.eos_token_id if pipe.tokenizer else 50256)
+        response = pipe(messages, max_new_tokens=500, pad_token_id=pipe.tokenizer.eos_token_id if pipe.tokenizer else 50256)
 
         # Obter o texto gerado pelo 'assistant'
         generated_text = response[0]['generated_text'][3]['content']
-        
-        print("Generated text:", generated_text)
         
         # Remover formatações extras como ``` e quebras de linha
         cleaned_text = re.sub(r'```|[\n\r]', '', generated_text).strip()
 
         # Validar o texto gerado com regex para garantir que seja um JSON válido
-        if not re.match(json_regex, generated_text):
+        if not re.match(json_regex_diagnotis, generated_text):
             raise HTTPException(status_code=500, detail="Resposta inválida, o formato JSON não foi detectado")
 
         # Converter para JSON
         result = json.loads(generated_text)
 
-        # Verificar se a chave 'sintomas' está presente e é uma lista
-        if not isinstance(result, dict) or "sintomas" not in result or not isinstance(result["sintomas"], list):
+        # Verificar se a chave 'title', 'description' e 'score' estão presentes
+        if not isinstance(result, dict) or "title" not in result or "description" not in result or "score" not in result:
             raise HTTPException(status_code=500, detail="Formato de JSON inválido")
-
+        
         return result
     
     except Exception as e:
