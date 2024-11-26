@@ -1,0 +1,14 @@
+{
+  "folders": [
+	{
+		"path": "../FlutterGo"
+	},
+	{
+		"path": "../GoAPI"
+	},
+	{
+		"path": "."
+	}
+],
+  "settings": {}
+}
