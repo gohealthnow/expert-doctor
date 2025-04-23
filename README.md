@@ -1,50 +1,146 @@
-# Expert Doctor
+# Expert Doctor API
 
-Go Health A.I Repository
+Este repositório contém o código-fonte da **Expert Doctor API**, um sistema desenvolvido utilizando **FastAPI** que utiliza modelos de linguagem avançados (baseados no Transformers) para auxiliar no diagnóstico médico e na identificação de sintomas. Este projeto foi desenvolvido como parte de um Trabalho de Conclusão de Curso (TCC) e busca demonstrar a aplicação de Inteligência Artificial na área da saúde.
 
-## Overview
+## 📋 Funcionalidades
 
-This repository is part of the Go Health project, which aims to leverage artificial intelligence to provide expert medical insights and diagnostics.
+1. **Identificação de Sintomas** (`/symptoms`):
+   - A API recebe uma descrição textual do paciente (em linguagem natural) e gera um checklist de sintomas identificados.
+   - Resposta no formato JSON.
 
-## Features
+2. **Diagnóstico Baseado em Sintomas** (`/diagnosis`):
+   - A API recebe um checklist de sintomas e retorna um diagnóstico preliminar em formato JSON contendo:
+     - **Título do diagnóstico**.
+     - **Descrição do diagnóstico**.
+     - **Score de confiabilidade**.
 
-- **AI-Powered Diagnostics**: Uses advanced machine learning algorithms to analyze pataient data.
-- **User-Friendly Interface**: Easy-to-use interface for both patients and healthcare providers.
-- **Scalable Architecture**: Designed to handle large volumes of data efficiently.
+## 🛠️ Tecnologias Utilizadas
 
-## AI Process
-The artificial intelligence API in Go Health performs diagnostics in three steps:
+- **Python**: Linguagem principal do projeto.
+- **FastAPI**: Framework para construção da API.
+- **Transformers**: Biblioteca utilizada para integração com modelos de linguagem (Hugging Face).
+- **Regex**: Para validação da estrutura de JSON gerado.
+- **Pydantic**: Para validação e tipagem de dados.
 
-- **User Input**: The user submits a textual description of their symptoms or pains. The API is designed to handle cases where the patient may not clearly know what they are experiencing.
-- **Checklist Generation**: Based on the provided symptoms, the API generates a checklist of options that may resemble possible medical conditions related to the reported symptoms.
-- **Disease Classification**: The data from the checklist is analyzed to classify and identify a potential disease. The system uses machine learning models to provide a suggested diagnosis.
+## 🚀 Fluxo de Funcionamento
 
-## Installation
-
-To get started with the project, clone the repository and install the necessary dependencies:
-
-```bash
-git clone https://github.com/gohealthnow/expert-doctor.git
-cd expert-doctor
-pip install -r requirements.txt
+```mermaid
+graph TD
+    A[Usuário] -->|Envia texto descrevendo sintomas| B[Endpoint /symptoms]
+    B -->|Modelo de IA gera JSON com checklist de sintomas| C["{\'sintomas\': [\'Sintoma 1\', \'Sintoma 2\']}"]
+    C -->|Usuário seleciona sintomas e envia para| D[Endpoint /diagnosis]
+    D -->|Modelo de IA gera diagnóstico| E["{\'title\': \'Título\', \'description\': \'Descrição\', \'score\': \'Confiança\'}"]
 ```
 
-## Usage
+## 📄 Exemplos de Uso
 
-Run the main application:
+### 1. Endpoint `/symptoms`
+**Requisição**:
+```json
+POST /symptoms
+Content-Type: application/json
 
-```bash
-python main.py
+{
+    "text": "Estou com febre, dor de cabeça e cansaço."
+}
 ```
 
-## Contributing
+**Resposta**:
+```json
+{
+    "sintomas": ["Febre", "Dor de cabeça", "Cansaço"]
+}
+```
 
-We welcome contributions! Please read our [contribution guidelines](CONTRIBUTING.md) for more details.
+---
 
-## License
+### 2. Endpoint `/diagnosis`
+**Requisição**:
+```json
+POST /diagnosis
+Content-Type: application/json
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+{
+    "sintomas": ["Febre", "Dor de cabeça", "Cansaço"]
+}
+```
 
-## Contact
+**Resposta**:
+```json
+{
+    "title": "Gripe",
+    "description": "Uma infecção viral comum que afeta o sistema respiratório.",
+    "score": "95%"
+}
+```
 
-For more information, visit the [Go Health organization](https://github.com/gohealthnow).
+## 🎯 Objetivo do Projeto
+
+Este projeto tem como objetivo demonstrar como a Inteligência Artificial pode ser aplicada para:
+- Auxiliar no diagnóstico médico preliminar.
+- Agilizar processos na área de saúde.
+- Aumentar a acessibilidade a informações médicas confiáveis.
+
+## ⚠️ Aviso Legal
+
+**Este sistema não substitui o diagnóstico médico profissional.** Ele é uma ferramenta de suporte e deve ser utilizado apenas como referência inicial. Sempre consulte um médico para um diagnóstico preciso e tratamento adequado.
+
+---
+
+## 📚 Estrutura do Código
+
+- `app.py`: Contém a implementação principal da API.
+- **Endpoints**:
+  - `/symptoms`: Recebe descrições textuais e gera um checklist de sintomas.
+  - `/diagnosis`: Recebe um checklist de sintomas e retorna um diagnóstico.
+
+---
+
+## 🖼️ Diagrama de Componentes Internos
+
+```mermaid
+classDiagram
+    class FastAPI {
+        +predict_symptoms()
+        +predict_diagnosis()
+    }
+    class Pipeline {
+        +model: "meta-llama/Llama-3.2-1B-Instruct"
+        +generate()
+    }
+    class RegexValidator {
+        +json_regex
+        +json_regex_diagnotis
+    }
+    FastAPI --> Pipeline : Utiliza modelo para gerar texto
+    FastAPI --> RegexValidator : Valida JSON gerado
+    Pipeline --> FastAPI : Retorna JSON formatado
+```
+
+## 💻 Como Executar Localmente
+
+1. Clone este repositório:
+   ```bash
+   git clone https://github.com/gohealthnow/expert-doctor.git
+   cd expert-doctor
+   ```
+
+2. Instale as dependências:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Execute o servidor:
+   ```bash
+   uvicorn app:app --reload
+   ```
+
+4. Acesse a documentação interativa da API em [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+---
+
+## 📬 Contato
+
+Para mais informações, entre em contato:
+- **Autor**: Polabiel
+- **E-mail**: bielgabrieloliveira77@gmail.com
